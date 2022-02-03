@@ -1,11 +1,13 @@
 package com.jiantsquid.core.data;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Data {
 
 	private final Map<String,String> attributes = new ConcurrentHashMap<>() ;
+	private final Map<String,Data>   data       = new ConcurrentHashMap<>() ;
 	private final Map<String,byte[]> rawData    = new ConcurrentHashMap<>() ;
 	
 	public static final String TIMESTAMP = "TIMESTAMP" ;
@@ -18,12 +20,28 @@ public class Data {
 		return Long.parseLong( TIMESTAMP ) ;
 	}
 	
+	public Map<String,String> getAttributes() {
+		return new HashMap<>( attributes ) ;
+	}
+	
+	protected Map<String,String> getAttributes_() {
+		return attributes ;
+	}
+	
 	protected void setAttribute( String name, String data ) {
 		attributes.put( name, data ) ;
 	}
 	
 	protected String getAttribute( String name ) {
 		return attributes.get( name ) ;
+	}
+	
+	protected void setData( String name, Data data ) {
+		this.data.put( name, data ) ;
+	}
+	
+	protected Data getData( String name ) {
+		return data.get( name ) ;
 	}
 	
 	protected void setRawData( String name, byte[] data ) {

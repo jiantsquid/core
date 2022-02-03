@@ -1,14 +1,22 @@
 package com.jiantsquid.core.data;
 
-public class DataBuilder {
+public abstract class DataBuilder<DATACLASS extends Data> {
  
-	private Data data = new Data() ;
+	protected DATACLASS data ;
 	
-	public DataBuilder() {}
+	public DataBuilder() {
+		createData() ;
+	}
+	
+	abstract DataBuilder createData() ;
 	
 	public Data setAttribute( String name, String attribute ) {
 		data.setAttribute( name, attribute ) ;
 		return data ;
+	}
+	
+	public void setData( String name, Data data ) {
+		data.setData( name, data ) ;
 	}
 	
 	public Data setRawData( String name, byte[] rawData ) {
