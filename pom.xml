@@ -1,20 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   
-  <groupId>com.jiantsquid.poc</groupId>
+  <groupId>com.jiantsquid.core</groupId>
   <artifactId>com.jiantsquid.core</artifactId>
 <version>0.0.1-SNAPSHOT</version>
-  <repositories>
-	<repository>
-		<id>jenkinsrep</id>
-		<url>"https://repo.jenkins-ci.org/releases/"</url>
-	</repository>
-	<repository>
-      <id>repo.jenkins-ci.org</id>
-      <url>https://repo.jenkins-ci.org/public/</url>
-      <!-- allow snapshots -->
-    </repository>
-  </repositories>
+
+<properties>
+   <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+</properties>
+
   <dependencies>
   	<dependency>
 	    <groupId>com.fasterxml.jackson.core</groupId>
@@ -22,50 +16,43 @@
 	    <version>2.11.1</version>
   	</dependency>
   	
-  	
-  	<!-- https://mvnrepository.com/artifact/com.offbytwo.jenkins/jenkins-client -->
-<dependency>
-    <groupId>com.offbytwo.jenkins</groupId>
-    <artifactId>jenkins-client</artifactId>
-    <version>0.3.8</version>
-</dependency>
 <!-- -->
 <dependency>
     <groupId>org.eclipse.jgit</groupId>
     <artifactId>org.eclipse.jgit</artifactId>
     <version>6.0.0.202111291000-r</version>
 </dependency>
-<!-- https://mvnrepository.com/artifact/javax.servlet/servlet-api -->
+
 <dependency>
-    <groupId>javax.servlet</groupId>
-    <artifactId>servlet-api</artifactId>
-    <version>2.5</version>
+    <groupId>org.apache.maven</groupId>
+    <artifactId>maven-project</artifactId>
+    <version>2.2.1</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.maven</groupId>
+    <artifactId>maven-core</artifactId>
+    <version>3.8.4</version>
 </dependency>
 
- <!-- 	-->
-		<dependency>
-			<groupId>net.sf.bluecove</groupId>
-			<artifactId>bluecove</artifactId>
-			<version>2.1.0</version>
-		</dependency>
-		<dependency>
-			<groupId>net.sf.bluecove</groupId>
-			<artifactId>bluecove-emu</artifactId>
-			<version>2.1.0</version>
-		</dependency>
-		<dependency>
-			<groupId>net.sf.bluecove</groupId>
-			<artifactId>bluecove-gpl</artifactId>
-			<version>2.1.0</version>
-		</dependency>
+<dependency>
+    <groupId>org.apache.maven.shared</groupId>
+    <artifactId>maven-invoker</artifactId>
+    <version>2.1.1</version>
+</dependency>
+<dependency>
+    <groupId>org.codehaus.sonar</groupId>
+    <artifactId>sonar-ws-client</artifactId>
+    <version>5.1</version>
+</dependency>
   </dependencies>
+
   <build>
   <plugins>
     <plugin>    
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-            <source>1.8</source>
-            <target>1.8</target>
+            <source>11</source>
+            <target>11</target>
         </configuration>
     </plugin>
   </plugins>
