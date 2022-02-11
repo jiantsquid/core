@@ -10,4 +10,24 @@ public class Component {
 	private String name ;
 	private String longName ;
 	private String path ;
+	public String getKey() {
+		return key;
+	}
+	public boolean isEnabled() {
+		return enabled;
+	}
+	public String getQualifier() {
+		return qualifier;
+	}
+	public String getName() {
+		return name;
+	}
+	public String getLongName() {
+		return longName;
+	}
+	public String getPath() {
+		return path;
+	}
+	
+	
 }
