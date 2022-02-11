@@ -1,5 +1,7 @@
 package test;
 
+import java.util.List;
+
 public class Issue {
 
 	private String key ;
@@ -7,14 +9,15 @@ public class Issue {
 	private String severity ;
 	private String component ;
 	private String project ;
+	private String line ;
 	private String hash ;
-	private String[] flows  ;
+	private List<?> flows  ;
 	private String  status ;
-	private String mesage ;
+	private String message ;
 	private String effort ;
 	private String debt ;
 	private String author ;
-	private String[] tags ;
+	private List<?> tags ;
 	private String creationDate ;
 	private String updateDate ;
 	private String type ;

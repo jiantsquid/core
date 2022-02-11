@@ -1,7 +1,6 @@
 package test;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 public class Issues {
 
@@ -12,7 +11,7 @@ public class Issues {
 	
 	private Paging paging ;
 	
-	public Issues() {}
+	private List<Issue> issues ;
 	
-	Map<String,String> issues = new HashMap<>() ;
+	public Issues() {}
 }
