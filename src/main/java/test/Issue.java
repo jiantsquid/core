@@ -23,6 +23,9 @@ public class Issue {
 	private String type ;
 	private String scope ;
 	private String quickFixAvailable ;
+	private String resolution ;
+	private String closeDate ;
+		
 	
 	private TextRange textRange ;
 	

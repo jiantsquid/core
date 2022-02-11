@@ -8,10 +8,11 @@ public class Issues {
 	private String p ;
 	private String ps ;
 	private String effortTotal ;
+	private List<String> facets ;
 	
 	private Paging paging ;
 	
 	private List<Issue> issues ;
-	
+	private List<Component> components ;
 	public Issues() {}
 }

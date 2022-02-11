@@ -171,6 +171,8 @@ class TestJenkins {
 		response = client.get( "api/issues/search", "project", "com.jiantsquid.poc:com.jiantsquid.core" ) ;
 		System.out.print( response ) ;
 		System.out.flush() ;
+		System.out.println();
+		System.out.println( "____________________________________________________________________________________" ) ;
 		JsonFactory jsonFactory = new JsonFactory();
 		jsonFactory.disable( JsonGenerator.Feature.AUTO_CLOSE_TARGET ) ;
 		jsonFactory.disable( JsonParser.Feature.AUTO_CLOSE_SOURCE ) ;
