@@ -1,6 +1,7 @@
 package test;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -25,8 +26,10 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRefNameException;
+import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.RefAlreadyExistsException;
 import org.eclipse.jgit.api.errors.RefNotFoundException;
+import org.eclipse.jgit.api.errors.TransportException;
 import org.sonar.wsclient.SonarClient;
 
 import com.fasterxml.jackson.annotation.PropertyAccessor;
@@ -34,9 +37,10 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.jiantsquid.core.data.Data;
 
 class TestJenkins {
 
@@ -44,6 +48,7 @@ class TestJenkins {
 	String localRepository = "C:\\Users\\Greg\\Documents\\development\\gitrepo"  ;
 	String pomFile2 = localRepository + "\\pom.xml" ;
 	
+	private File localRepositoryFile  ;
 
 	String settings = "<settings>"
 			+ "    <pluginGroups>"
@@ -75,11 +80,8 @@ class TestJenkins {
         return directoryToBeDeleted.delete();
     }
     
-	private void run() throws IOException, InterruptedException, RefAlreadyExistsException, 
-			RefNotFoundException, InvalidRefNameException, CheckoutConflictException, GitAPIException, XmlPullParserException {
-
-		// get source code from github		
-		File localRepositoryFile = new File( localRepository ) ;
+    private void cloneRepository() throws InvalidRemoteException, TransportException, GitAPIException {
+    	
 		deleteDirectory( new File( localRepository ) ) ;
 		localRepositoryFile.mkdirs() ;
 		
@@ -87,26 +89,21 @@ class TestJenkins {
 		Git.cloneRepository().setDirectory( localRepositoryFile )
                .setURI(remoteRepository ).setCloneAllBranches(true).call();
 		
-		// compile maven
-		FileReader reader = null;
+    }
+    
+    private List<Dependency> getDependencies() throws FileNotFoundException, IOException, XmlPullParserException {
+    	FileReader reader = null;
 		
 		MavenXpp3Reader mavenreader = new MavenXpp3Reader();
 
-
-		Model model = mavenreader.read(new FileReader(pomFile2));
-		
+		Model model = mavenreader.read(new FileReader(pomFile2));	
 		MavenProject project = new MavenProject(model);
 		
-		List<Dependency> deps = project.getDependencies();
-
-		// Get dependency details
-		for (Dependency d: deps) {      
-		    System.out.print(d.getArtifactId());
-		    System.out.print(":");
-		    System.out.println(d.getVersion()); 
-		}        
-		
-		InvocationRequest request = new DefaultInvocationRequest();
+		return project.getDependencies();
+    }
+    
+    private void compileProject() throws IOException {
+    	InvocationRequest request = new DefaultInvocationRequest();
 		request.setPomFile( new File( pomFile2 ) ) ;
 		request.setGoals( Collections.singletonList( "compile" ) );
 		request.setLocalRepositoryDirectory( localRepositoryFile ) ;
@@ -128,21 +125,15 @@ class TestJenkins {
 		{
 		  e.printStackTrace();
 		}
-		
-		
-		invoker = new DefaultInvoker();
+    }
+    
+    private Issues analyzeProject() throws JsonMappingException, JsonProcessingException {
+    	DefaultInvoker    invoker = new DefaultInvoker();
+		InvocationRequest request = new DefaultInvocationRequest();
 		invoker.setMavenHome(new File("C:\\Users\\Greg\\Documents\\development\\apache-maven-3.8.4"));
 		invoker.setMavenExecutable( new File("C:\\Users\\Greg\\Documents\\development\\apache-maven-3.8.4\\bin\\mvn.cmd" ) ) ;
 		request.setGoals( Collections.singletonList( "verify sonar:sonar -Dsonar.projectBaseDir=" + localRepository
 				+ " -Dsonar.login=110135c194c457155225f2b7ea4882e066bbe7a7" ) ) ;
-		invoker.setOutputHandler( new InvocationOutputHandler() {
-
-			@Override
-			public void consumeLine(String line) {
-				System.out.println( line ) ;
-			}
-			
-		}) ;
 		
 		try
 		{
@@ -184,9 +175,37 @@ class TestJenkins {
 		objectMapper.configure( SerializationFeature.FAIL_ON_EMPTY_BEANS, false ) ;
 		
 		
-		Issues issues = objectMapper.readValue( response, Issues.class ) ;
+		return objectMapper.readValue( response, Issues.class ) ;
+    }
+	private void run() throws IOException, InterruptedException, RefAlreadyExistsException, 
+			RefNotFoundException, InvalidRefNameException, CheckoutConflictException, GitAPIException, XmlPullParserException {
+
+		localRepositoryFile = new File( localRepository ) ;
 		
-		int toto = 0 ;
+		// get source code from github		
+		cloneRepository() ;
+		
+		// compile maven
+		List<Dependency> deps = getDependencies() ;
+
+		// Get dependency details
+		for (Dependency d: deps) {      
+		    System.out.print(d.getArtifactId());
+		    System.out.print(":");
+		    System.out.println(d.getVersion()); 
+		}        
+		
+		compileProject() ;
+		analyzeProject() ;
+		Issues issues = analyzeProject() ;
+		
+		System.out.println( issues.getIssues().size() + " " + issues.getComponents().size() ) ; 
+		System.out.println( "REPORT REPORT REPORT REPORT REPORT" ) ;
+		for( Issue issue : issues.getIssues() ) {
+			System.out.println( issue.getRule() + " " + issue.getResolution() + " " 
+					+ issue.getScope() + " " + issue.getComponent() + " " + issue.getDebt() + " " 
+					+ issue.getEffort() + " " + issue.getMessage() ) ;
+		}
 	}
 	
 	public static void main(String[] args) throws IOException, InterruptedException, RefAlreadyExistsException, RefNotFoundException, InvalidRefNameException, CheckoutConflictException, GitAPIException, XmlPullParserException {

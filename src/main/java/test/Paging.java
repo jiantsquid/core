@@ -6,5 +6,19 @@ public class Paging {
 	private String pageSize ;
 	private String total ;
 	
-	public Paging() {} ;
+	public Paging() {}
+
+	public String getPageIndex() {
+		return pageIndex;
+	}
+
+	public String getPageSize() {
+		return pageSize;
+	}
+
+	public String getTotal() {
+		return total;
+	} ;
+	
+	
 }
