@@ -45,7 +45,7 @@ import test.data.Project;
 import test.data.SourceCodeManagementSystem;
 import test.sonardata.Issue;
 import test.sonardata.Issues;
-
+//  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 
 class TestJenkins {
 
     String remoteRepository  = "https://github.com/jiantsquid/core.git" ;
