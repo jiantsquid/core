@@ -1,5 +1,7 @@
 package com.jiantsquid.core.data;
 
+import java.util.List;
+
 public abstract class DataBuilder<DATACLASS extends Data> {
  
 	protected DATACLASS data ;
@@ -8,20 +10,21 @@ public abstract class DataBuilder<DATACLASS extends Data> {
 		createData() ;
 	}
 	
-	abstract DataBuilder createData() ;
+	protected abstract DATACLASS createData() ;
 	
-	public Data setAttribute( String name, String attribute ) {
+	public DataBuilder<DATACLASS> setAttribute( String name, String attribute ) {
 		data.setAttribute( name, attribute ) ;
-		return data ;
+		return this ;
 	}
 	
-	public void setData( String name, Data data ) {
-		data.setData( name, data ) ;
+	public DataBuilder<DATACLASS> setData( String name, List<Data> data ) {
+		this.data.setData( name, data ) ;
+		return this ;
 	}
 	
-	public Data setRawData( String name, byte[] rawData ) {
+	public DataBuilder<DATACLASS> setRawData( String name, byte[] rawData ) {
 		data.setRawData( name, rawData ) ;
-		return data ;
+		return this ;
 	}
 	
 	public Data build() {

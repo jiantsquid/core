@@ -1,16 +1,19 @@
 package com.jiantsquid.core.data;
 
+import java.util.ArrayList;
+
 // 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
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Data {
 
-	private final Map<String,String> attributes = new ConcurrentHashMap<>() ;
-	private final Map<String,Data>   data       = new ConcurrentHashMap<>() ;
-	private final Map<String,byte[]> rawData    = new ConcurrentHashMap<>() ;
+	private final Map<String,String>     attributes = new ConcurrentHashMap<>() ;
+	private final Map<String,List<? extends Data>> data       = new ConcurrentHashMap<>() ;
+	private final Map<String,byte[]>     rawData    = new ConcurrentHashMap<>() ;
 	
 	public static final String TIMESTAMP = "TIMESTAMP" ;
 	
@@ -38,12 +41,12 @@ public class Data {
 		return attributes.get( name ) ;
 	}
 	
-	protected void setData( String name, Data data ) {
+	protected void setData( String name, List<? extends Data> data ) {
 		this.data.put( name, data ) ;
 	}
 	
-	protected Data getData( String name ) {
-		return data.get( name ) ;
+	protected List<? extends Data> getData( String name ) {
+		return new ArrayList<>( data.get( name ) ) ;
 	}
 	
 	protected void setRawData( String name, byte[] data ) {

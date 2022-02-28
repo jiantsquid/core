@@ -1,6 +1,7 @@
 package com.jiantsquid.core.network.p2p.message;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,16 +33,8 @@ public class Message extends Data {
 	}
 	
 	public void addUserData( String key, Data userData ) {
-		setData( key, userData ) ;
+		setData( key, Collections.singletonList( userData ) ) ;
 	}
-	
-//	public void setUserData( Map<String,Data> userData ) {
-//		this.userData.putAll( userData ) ;
-//	}
-	
-//	public Map<String,Data> getUserData() {
-//		return new HashMap<>( userData ) ;
-//	}
 	
 	public Map<String,String> getParameters() {
 		return new HashMap<>( getAttributes() ) ;

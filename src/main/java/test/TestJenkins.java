@@ -3,6 +3,7 @@ package test;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Collections;
@@ -12,15 +13,12 @@ import java.util.Map;
 
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
+import org.apache.maven.model.Parent;
+import org.apache.maven.model.Scm;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.invoker.DefaultInvocationRequest;
-import org.apache.maven.shared.invoker.DefaultInvoker;
-import org.apache.maven.shared.invoker.InvocationOutputHandler;
 import org.apache.maven.shared.invoker.InvocationRequest;
-import org.apache.maven.shared.invoker.InvocationResult;
-import org.apache.maven.shared.invoker.Invoker;
-import org.apache.maven.shared.invoker.MavenInvocationException;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
@@ -42,6 +40,12 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+import test.data.DataFactory;
+import test.data.Project;
+import test.data.SourceCodeManagementSystem;
+import test.sonardata.Issue;
+import test.sonardata.Issues;
+
 class TestJenkins {
 
     String remoteRepository  = "https://github.com/jiantsquid/core.git" ;
@@ -50,26 +54,9 @@ class TestJenkins {
 	
 	private File localRepositoryFile  ;
 
-	String settings = "<settings>"
-			+ "    <pluginGroups>"
-			+ "        <pluginGroup>org.sonarsource.scanner.maven</pluginGroup>"
-			+ "    </pluginGroups>"
-			+ "    <profiles>"
-			+ "        <profile>"
-			+ "            <id>sonar</id>"
-			+ "            <activation>"
-			+ "                <activeByDefault>true</activeByDefault>"
-			+ "            </activation>"
-			+ "            <properties>"
-			+ "                <!-- Optional URL to server. Default value is http://localhost:9000 -->"
-			+ "                <sonar.host.url>"
-			+ "                  http://myserver:9000"
-			+ "                </sonar.host.url>"
-			+ "            </properties>"
-			+ "        </profile>"
-			+ "     </profiles>"
-			+ "</settings>" ;
 	
+	
+	 //////////////////////////////////////////////////
     boolean deleteDirectory(File directoryToBeDeleted) {
         File[] allContents = directoryToBeDeleted.listFiles();
         if (allContents != null) {
@@ -80,89 +67,39 @@ class TestJenkins {
         return directoryToBeDeleted.delete();
     }
     
-    private void cloneRepository() throws InvalidRemoteException, TransportException, GitAPIException {
+   
+    private test.data.Project cloneJiantSquidRepository() throws InvalidRemoteException, TransportException, GitAPIException {
     	
-		deleteDirectory( new File( localRepository ) ) ;
+		deleteDirectory( localRepositoryFile ) ;
 		localRepositoryFile.mkdirs() ;
 		
-		// clone repository
-		Git.cloneRepository().setDirectory( localRepositoryFile )
-               .setURI(remoteRepository ).setCloneAllBranches(true).call();
-		
-    }
+		// checkout repository
+		return checkoutProject( remoteRepository, localRepository ) ;
+    }  
     
-    private List<Dependency> getDependencies() throws FileNotFoundException, IOException, XmlPullParserException {
-    	FileReader reader = null;
-		
-		MavenXpp3Reader mavenreader = new MavenXpp3Reader();
-
-		Model model = mavenreader.read(new FileReader(pomFile2));	
-		MavenProject project = new MavenProject(model);
-		
-		return project.getDependencies();
+    private test.data.Project checkoutProject( String url, String localRep ) {
+    	// checkout repository
+		SourceCodeManagementSystem scm = DataFactory.createSourceCodeManagementSystem( null, null, url, localRep) ;
+		if( !scm.checkout() ) {
+			return null ;
+		}
+			
+		// return new project
+		return DataFactory.createProject( localRep, scm ) ;
     }
-    
-    private void compileProject() throws IOException {
-    	InvocationRequest request = new DefaultInvocationRequest();
-		request.setPomFile( new File( pomFile2 ) ) ;
-		request.setGoals( Collections.singletonList( "compile" ) );
-		request.setLocalRepositoryDirectory( localRepositoryFile ) ;
-		
-		File setting = new File( localRepositoryFile + File.separator + "settings.xml" ) ;
-		RandomAccessFile sets = new RandomAccessFile( setting, "rw" ) ;
-		sets.writeUTF( settings ) ;
-		sets.close();
-		
-		Invoker invoker = new DefaultInvoker();
-		invoker.setMavenHome(new File("C:\\Users\\Greg\\Documents\\development\\apache-maven-3.8.4"));
-		invoker.setMavenExecutable( new File("C:\\Users\\Greg\\Documents\\development\\apache-maven-3.8.4\\bin\\mvn.cmd" ) ) ;
-		try
-		{
-		  invoker.execute( request );
-		  
-		}
-		catch (MavenInvocationException e)
-		{
-		  e.printStackTrace();
-		}
+//////////////////////////////////////////////////
+    private void compileProject( File pomFile, File localRepository ) throws IOException {
+		new MavenBuilder().buid( localRepository, pomFile ) ;
     }
     
     private Issues analyzeProject() throws JsonMappingException, JsonProcessingException {
-    	DefaultInvoker    invoker = new DefaultInvoker();
-		InvocationRequest request = new DefaultInvocationRequest();
-		invoker.setMavenHome(new File("C:\\Users\\Greg\\Documents\\development\\apache-maven-3.8.4"));
-		invoker.setMavenExecutable( new File("C:\\Users\\Greg\\Documents\\development\\apache-maven-3.8.4\\bin\\mvn.cmd" ) ) ;
-		request.setGoals( Collections.singletonList( "verify sonar:sonar -Dsonar.projectBaseDir=" + localRepository
-				+ " -Dsonar.login=110135c194c457155225f2b7ea4882e066bbe7a7" ) ) ;
+		new MavenBuilder().analyze( localRepositoryFile ) ;
 		
-		try
-		{
-			InvocationResult result = invoker.execute( request );
-		}
-		catch (MavenInvocationException e)
-		{
-		  e.printStackTrace();
-		}
 		SonarClient client = SonarClient.builder()
 				.login( "admin" )
 				.password( "jiantsquid" ).url( "http://localhost:9000" ).build() ;
-		String response = client.get( "/api/ce/task", "id", "AX7ZUB6cXzxPHGoV7CDm" ) ;
-		System.out.println( response ) ;
+		String response = client.get( "api/issues/search", "project", "com.jiantsquid.poc:com.jiantsquid.core" ) ;
 		
-		response = client.get( "/api/project_analyses/search", "project", "com.jiantsquid.poc:com.jiantsquid.core" ) ;
-		System.out.println( response ) ;
-		
-		response = client.get( "api/qualityprofiles/search", "project", "com.jiantsquid.poc:com.jiantsquid.core", "language", "java" ) ;
-		System.out.println( response ) ;
-		
-//		response = client.get( "api/measures/component", "project", "com.jiantsquid.core:com.jiantsquid.core" ) ;
-//		System.out.println( response ) ;
-		
-		
-		response = client.get( "api/issues/search", "project", "com.jiantsquid.poc:com.jiantsquid.core" ) ;
-		System.out.print( response ) ;
-		System.out.flush() ;
-		System.out.println();
 		System.out.println( "____________________________________________________________________________________" ) ;
 		JsonFactory jsonFactory = new JsonFactory();
 		jsonFactory.disable( JsonGenerator.Feature.AUTO_CLOSE_TARGET ) ;
@@ -177,38 +114,128 @@ class TestJenkins {
 		
 		return objectMapper.readValue( response, Issues.class ) ;
     }
+    
+    private Map<Project,Boolean> checkoutStatus = new HashMap<>() ;
+ 
 	private void run() throws IOException, InterruptedException, RefAlreadyExistsException, 
 			RefNotFoundException, InvalidRefNameException, CheckoutConflictException, GitAPIException, XmlPullParserException {
 
 		localRepositoryFile = new File( localRepository ) ;
 		
 		// get source code from github		
-		cloneRepository() ;
+		Project project = cloneJiantSquidRepository() ;
+		new MavenBuilder().buid(localRepositoryFile, new File( pomFile2 ) ) ;
 		
-		// compile maven
-		List<Dependency> deps = getDependencies() ;
-
+		
 		// Get dependency details
-		for (Dependency d: deps) {      
-		    System.out.print(d.getArtifactId());
-		    System.out.print(":");
-		    System.out.println(d.getVersion()); 
-		}        
+		project = DataFactory.createProject( project ) ;
 		
-		compileProject() ;
-		analyzeProject() ;
-		Issues issues = analyzeProject() ;
-		
-		System.out.println( issues.getIssues().size() + " " + issues.getComponents().size() ) ; 
-		System.out.println( "REPORT REPORT REPORT REPORT REPORT" ) ;
-		for( Issue issue : issues.getIssues() ) {
-			System.out.println( issue.getRule() + " " + issue.getResolution() + " " 
-					+ issue.getScope() + " " + issue.getComponent() + " " + issue.getDebt() + " " 
-					+ issue.getEffort() + " " + issue.getMessage() ) ;
+		for( Project dependency : project.getDependencies() ) {
+			SourceCodeManagementSystem scm = dependency.getSMC() ;
+			System.out.print( "CHECKOUT DEPENDENCY: " + dependency.getId() ) ;
+			if( scm != null ) {
+				System.out.println() ;
+				boolean status = dependency.getSMC().checkout() ;
+				checkoutStatus.put( dependency, status ) ;
+			} else {
+				System.out.println( " SCM NULL" ) ;
+			}
 		}
+		
+		System.out.println( "________________________________________________________________" ) ;
+		
+		for( Map.Entry<Project,Boolean> entry : checkoutStatus.entrySet() ) {
+			System.out.println( entry.getKey().getId() + " " + entry.getValue() ) ;
+		}
+		System.out.println( "________________________________________________________________" ) ;
+		// compile maven
+		//compileProject( new File( pomFile2 ), localRepositoryFile ) ;
+		//compileDependencies( deps ) ;
+		
+//		Issues issues = analyzeProject( ) ; 
+//		
+//		System.out.println( issues.getIssues().size() + " " + issues.getComponents().size() ) ; 
+//		System.out.println( "REPORT REPORT REPORT REPORT REPORT" ) ;
+//		for( Issue issue : issues.getIssues() ) {
+//			System.out.println( issue.getRule() + " " + issue.getResolution() + " " 
+//					+ issue.getScope() + " " + issue.getComponent() + " " + issue.getDebt() + " " 
+//					+ issue.getEffort() + " " + issue.getMessage() ) ;
+//		}
+		//NEED TO CREATE PROJECT WITH DEPENDENCIES ISSUES, AND SCM's HERE
 	}
 	
-	public static void main(String[] args) throws IOException, InterruptedException, RefAlreadyExistsException, RefNotFoundException, InvalidRefNameException, CheckoutConflictException, GitAPIException, XmlPullParserException {
+	private File getPomFile( String groupId, String artifactId, String version ) {
+		String groupIdPath =groupId.contains( "." ) ? groupId.replace( ".", File.separator ) : groupId ;
+		String depPath = this.localRepositoryFile + File.separator 
+				+ groupIdPath  + File.separator 
+				+ artifactId + File.separator 
+				+ version + File.separator ;
+		File depDirectory = new File( depPath ) ;
+		File[] pom = depDirectory.listFiles( new FilenameFilter()  {
+	
+			@Override
+			public boolean accept(File dir, String name) {
+				// TODO Auto-generated method stub
+				return name.endsWith( ".pom" ) ;
+			}
+			
+		}) ;
+		
+		return pom == null || pom.length == 0 ? null : pom[0] ;
+	}
+
+	
+	private void compileDependencies( List<Dependency> dependencies ) throws IOException, XmlPullParserException, InvalidRemoteException, TransportException, GitAPIException {
+				
+		for( Dependency dep : dependencies ) { 
+			System.err.println( "*********COMPILE DEPENDENCY " + dep.getGroupId()+ ":" + dep.getArtifactId() ) ;
+			String groupIdPath = dep.getGroupId().contains( "." ) ? dep.getGroupId().replace( ".", File.separator ) : dep.getGroupId() ;
+			File pom = getPomFile( dep.getGroupId(), dep.getArtifactId(), dep.getVersion() ) ;
+			
+			MavenXpp3Reader mavenreader = new MavenXpp3Reader();
+			
+			Model model          = mavenreader.read( new FileReader( pom ) ) ;
+			
+			Parent parent = model.getParent() ;
+			File parentPom = null ;
+			if( parent != null ) {
+				parentPom = getPomFile( parent.getGroupId(), parent.getArtifactId(), parent.getVersion() ) ;
+			}
+			Scm scm = model.getScm() ;
+			if( scm != null ) {
+				System.err.println( "SCM: " + scm.getConnection() + " " + scm.getUrl() + " " + scm.getTag() ) ;
+				
+//				File directory = new File( localRepositoryFile + File.separator + scm.getTag() ) ;
+//				Git.cloneRepository().setDirectory( directory )
+//	            .setURI(scm.getUrl() ).call();
+//				
+//				InvocationRequest request = new DefaultInvocationRequest();
+//				request.setPomFile( new File( directory.getCanonicalPath() + File.separatorChar + "pom.xml" ) ) ;
+//				request.setGoals( Collections.singletonList( "compile" ) );
+//				request.setLocalRepositoryDirectory( depDirectory ) ;
+//				request.setRecursive( true ) ;
+//				new MavenBuilder().invokeMaven( request ) ;
+			} else if( parentPom != null ){
+				Parent p = parent ;
+				while( p != null ) {
+					System.err.println( "------> NO SCM FOR " + groupIdPath + " look in parent pom:") ;
+					System.err.println( parentPom.getAbsolutePath() ) ;
+					Model parentModel          = mavenreader.read( new FileReader( parentPom ) ) ;
+					MavenProject parentProject = new MavenProject(parentModel);
+					Scm parentSCM = parentProject.getScm() ;
+					System.err.println( "parent SCM: " + (parentSCM== null ? "NO SCM" : parentSCM.getUrl() ) ) ;
+					System.err.println( "PARENT parent=" + parentProject.getParent() ) ;
+					parentPom = getPomFile( p.getGroupId(), p.getArtifactId(), p.getVersion() ) ;
+					p = parentModel.getParent() ;
+				}
+			} else {
+				System.err.println( "cannot find SCM" ) ;
+			}
+		}
+	}
+	public static void main(String[] args) throws IOException, InterruptedException, 
+	       RefAlreadyExistsException, RefNotFoundException, InvalidRefNameException, 
+	       CheckoutConflictException, GitAPIException, XmlPullParserException {
 		new TestJenkins().run() ;
 	}
 

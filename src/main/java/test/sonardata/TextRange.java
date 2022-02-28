@@ -1,4 +1,4 @@
-package test;
+package test.sonardata;
 
 public class TextRange {
 	private String startLine ;
