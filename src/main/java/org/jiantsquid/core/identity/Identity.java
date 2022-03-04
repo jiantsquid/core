@@ -1,6 +1,6 @@
-package com.jiantsquid.core.identity;
+package org.jiantsquid.core.identity;
 
-import com.jiantsquid.core.data.Data;
+import org.jiantsquid.core.data.Data;
 
 public abstract class Identity extends Data {
 

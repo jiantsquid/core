@@ -12,11 +12,15 @@ public class TestGradle {
 	public static void main(String[] args) {
 		Settings settings = new Settings() ;
 		Engine engine = new Engine( settings ) ;
-
-		List<Dependency> dependencies = engine.scan( "C:\\Users\\Greg\\Documents\\development\\gitrepo\\dependencies\\org.codehaus.sonar\\sonar-ws-client\\jar" ) ;
+		
+		//List<Dependency> dependencies = engine.scan( "C:\\Users\\Greg\\Documents\\development\\gitrepo\\dependencies\\org.codehaus.sonar\\sonar-ws-client\\jar\\sonar-core" ) ;
+		List<Dependency> dependencies = engine.scan( "C:\\Users\\Greg\\Documents\\development\\gitrepo" ) ;
+		
 		for( Dependency dep : dependencies ) {
-			dep.getEvidence( EvidenceType.PRODUCT ).forEach( (e) -> System.out.println( e.getName() ) ) ;
+			System.out.println( dep.toString() + " " + dep.getDescription() + dep.getName() + dep.getVersion() + "#" + dep.getVulnerableSoftwareIdentifiersCount()) ;
+			dep.getEvidence( EvidenceType.PRODUCT ).forEach( (e) -> System.out.println( "   " + e.getName()  + " " +e.getSource()  + " " + e.getValue() ) ) ;
 		}
+		engine.close();
 	}
 
 }

@@ -9,12 +9,15 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import org.apache.maven.model.Dependency;
+//import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Parent;
 import org.apache.maven.model.Scm;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.owasp.dependencycheck.Engine;
+import org.owasp.dependencycheck.utils.Settings;
+import org.owasp.dependencycheck.dependency.Dependency;
 
 public class DataFactory {
 
@@ -50,6 +53,9 @@ public class DataFactory {
 	
 	private static String parseProperties( Properties properties, String stringToParse ) {
 		int index = -1 ;
+		if( stringToParse == null ) {
+			return null ;
+		}
 		while( ( index = stringToParse.indexOf( '$' ) ) > -1 ) {
 			int index2 = stringToParse.indexOf( '}' ) ;
 			String propertyName = stringToParse.substring( index + 2, index2 ) ;
@@ -71,14 +77,18 @@ public class DataFactory {
 		}
 		org.apache.maven.project.MavenProject  mavenProject = new org.apache.maven.project.MavenProject(model);
 
-		List<Dependency> mavenDependencies = mavenProject.getDependencies() ;
+		Settings settings = new Settings() ;
+		Engine engine = new Engine( settings ) ;
+		List<Dependency> dependenciesList = engine.scan( project.getLocalRepository() ) ;
+		//List<Dependency> mavenDependencies = mavenProject.getDependencies() ;
 		List<Project> dependencies = new ArrayList<>() ;
-		for( Dependency dep : mavenDependencies ) {
-			System.out.println( "-> MAVEN dependency: " + dep.getManagementKey() ) ;
+		for( Dependency dep : dependenciesList ) {
+			System.out.println( "-> MAVEN dependency: " + dep.toString() ) ;
 			mavenreader = new MavenXpp3Reader();
-			File pom = getPomFile( project.getLocalRepository(), dep.getGroupId(), dep.getArtifactId(), dep.getVersion() ) ;
+			String actualPath = dep.getActualFilePath() ;
+			String pom = getPomFile( actualPath ) ;
 			try {
-				model       = mavenreader.read( new FileReader( pom ) ) ;
+				model       = mavenreader.read( new FileReader( actualPath.substring(0, actualPath.lastIndexOf( File.separator ) ) + File.separator + pom ) ) ;
 			} catch (IOException | XmlPullParserException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -86,8 +96,15 @@ public class DataFactory {
 			}
 		
 			Properties properties = model.getProperties() ;
+			String groupId    = parseProperties( properties, model.getGroupId() ) ;
+			String artifactId = parseProperties( properties, model.getArtifactId() ) ;
+			String version    = parseProperties( properties, model.getVersion() ) ;
+			
 			Scm scm = checkParentsScms( properties, project.getLocalRepository(), model.getParent() ) ;
-			String depPath = project.getLocalRepository()+ File.separator + "dependencies"+ File.separator + dep.getManagementKey().replace( ':', File.separatorChar) ;
+			String depPath = project.getLocalRepository()+ File.separator + "dependencies" 
+					+ File.separator + groupId
+					+ File.separator + artifactId
+					+ File.separator + version;
 			
 			
 			
@@ -98,11 +115,6 @@ public class DataFactory {
 				scms = createSourceCodeManagementSystem( scm.getConnection(), devConnection, url, depPath ) ;
 			}
 			
-			// parse properties : do the same for URIs
-			String groupId    = parseProperties( properties, dep.getGroupId() ) ;
-			String artifactId = parseProperties( properties, dep.getArtifactId() ) ;
-			String version    = parseProperties( properties, dep.getVersion() ) ;
-			
 			dependencies.add( new MavenProject( depPath,
 					groupId, artifactId, version, null, scms ) ) ;
 		}
@@ -110,6 +122,20 @@ public class DataFactory {
 				mavenProject.getGroupId(), mavenProject.getArtifactId(), mavenProject.getVersion(),
 				dependencies, project.getSMC() ) ; 
 				
+	}
+	
+	private static String getPomFile( String actualpath ) {
+		File dir = new File( actualpath.substring( 0, actualpath.lastIndexOf( File.separator) ) ) ;
+		String[] pom = dir.list( new FilenameFilter() {
+
+			@Override
+			public boolean accept(File dir, String name) {
+				
+				return "pom.xml".equals( name ) || name.endsWith( ".pom" ) ;
+			}
+			
+		}) ;
+		return pom == null || pom.length == 0 ? null : pom[0] ;
 	}
 	
 	private static Scm checkParentsScms( Properties properties, String localRepository, Parent parent ) {

@@ -1,4 +1,4 @@
-package com.jiantsquid.core.protocol;
+package org.jiantsquid.core.protocol;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,6 +7,9 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
+import org.jiantsquid.core.network.p2p.message.Request;
+import org.jiantsquid.core.network.p2p.message.Response;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -14,8 +17,6 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.jiantsquid.core.network.p2p.message.Request;
-import com.jiantsquid.core.network.p2p.message.Response;
 
 public class Protocol {
 

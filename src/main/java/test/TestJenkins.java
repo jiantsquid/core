@@ -130,12 +130,19 @@ class TestJenkins {
 		// Get dependency details
 		project = DataFactory.createProject( project ) ;
 		
+		Map<String,Project> dependencies = new HashMap<>() ;
 		for( Project dependency : project.getDependencies() ) {
+			if( dependencies.containsKey( dependency.getId() ) ) {
+				System.out.print( "DEPENDENCY: " + dependency.getId() + " already checked out" ) ;
+				continue ;
+			}
+				
 			SourceCodeManagementSystem scm = dependency.getSMC() ;
 			System.out.print( "CHECKOUT DEPENDENCY: " + dependency.getId() ) ;
 			if( scm != null ) {
 				System.out.println() ;
 				boolean status = dependency.getSMC().checkout() ;
+				dependencies.put( project.getId(), project ) ;
 				checkoutStatus.put( dependency, status ) ;
 			} else {
 				System.out.println( " SCM NULL" ) ;

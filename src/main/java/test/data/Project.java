@@ -3,7 +3,7 @@ package test.data;
 import java.util.Collections;
 import java.util.List;
 
-import com.jiantsquid.core.data.Data;
+import org.jiantsquid.core.data.Data;
 
 public abstract class Project extends Data {
 

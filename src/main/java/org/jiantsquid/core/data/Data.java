@@ -1,4 +1,4 @@
-package com.jiantsquid.core.data;
+package org.jiantsquid.core.data;
 
 import java.util.ArrayList;
 
@@ -33,8 +33,10 @@ public class Data {
 		return attributes ;
 	}
 	
-	protected void setAttribute( String name, String data ) {
-		attributes.put( name, data ) ;
+	protected void setAttribute( String name, String data ) { 
+		if( data != null ) {
+			attributes.put( name, data ) ;
+		}
 	}
 	
 	protected String getAttribute( String name ) {

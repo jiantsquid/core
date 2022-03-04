@@ -1,8 +1,8 @@
-package com.jiantsquid.core.network.p2p.message;
+package org.jiantsquid.core.network.p2p.message;
 
 import java.util.Map;
 
-import com.jiantsquid.core.identity.NetworkIdentity;
+import org.jiantsquid.core.identity.NetworkIdentity;
 
 public class Request extends Message {
 

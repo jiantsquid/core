@@ -1,4 +1,4 @@
-package com.jiantsquid.core.data;
+package org.jiantsquid.core.data;
 
 
 public class SmartCode extends Data {

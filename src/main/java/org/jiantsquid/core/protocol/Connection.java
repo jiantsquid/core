@@ -1,4 +1,4 @@
-package com.jiantsquid.core.protocol;
+package org.jiantsquid.core.protocol;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -6,8 +6,8 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
-import com.jiantsquid.core.network.p2p.message.Request;
-import com.jiantsquid.core.network.p2p.message.Response;
+import org.jiantsquid.core.network.p2p.message.Request;
+import org.jiantsquid.core.network.p2p.message.Response;
 
 
 public class Connection  {

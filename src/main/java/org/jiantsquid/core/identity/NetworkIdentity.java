@@ -1,4 +1,4 @@
-package com.jiantsquid.core.identity;
+package org.jiantsquid.core.identity;
 
 public class NetworkIdentity extends Identity {
 

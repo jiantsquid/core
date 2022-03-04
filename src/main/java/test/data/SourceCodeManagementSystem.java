@@ -1,6 +1,6 @@
 package test.data;
 
-import com.jiantsquid.core.data.Data;
+import org.jiantsquid.core.data.Data;
 
 public abstract class SourceCodeManagementSystem extends Data {
 

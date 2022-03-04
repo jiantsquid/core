@@ -1,4 +1,4 @@
-package com.jiantsquid.core.network.p2p.message;
+package org.jiantsquid.core.network.p2p.message;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import com.jiantsquid.core.data.Data;
-import com.jiantsquid.core.identity.NetworkIdentity;
+import org.jiantsquid.core.data.Data;
+import org.jiantsquid.core.identity.NetworkIdentity;
 
 
 public class Message extends Data {
