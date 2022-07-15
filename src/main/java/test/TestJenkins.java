@@ -1,12 +1,9 @@
 package test;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,10 +14,7 @@ import org.apache.maven.model.Parent;
 import org.apache.maven.model.Scm;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.shared.invoker.DefaultInvocationRequest;
-import org.apache.maven.shared.invoker.InvocationRequest;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRefNameException;
@@ -43,9 +37,9 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import test.data.DataFactory;
 import test.data.Project;
 import test.data.SourceCodeManagementSystem;
-import test.sonardata.Issue;
 import test.sonardata.Issues;
-//  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 
+//  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
+//  https://github.com/jiantsquid/network.git
 class TestJenkins {
 
     String remoteRepository  = "https://github.com/jiantsquid/core.git" ;

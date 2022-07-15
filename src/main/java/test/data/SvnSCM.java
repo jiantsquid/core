@@ -7,8 +7,6 @@ import java.nio.file.Path;
 
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNURL;
-import org.tmatesoft.svn.core.wc.SVNClientManager;
-import org.tmatesoft.svn.core.wc.SVNUpdateClient;
 import org.tmatesoft.svn.core.wc2.SvnCheckout;
 import org.tmatesoft.svn.core.wc2.SvnOperationFactory;
 import org.tmatesoft.svn.core.wc2.SvnTarget;
@@ -21,7 +19,6 @@ public class SvnSCM extends SourceCodeManagementSystem {
 	
 	@Override
 	public boolean checkout() {
-		SVNClientManager clientManager = SVNClientManager.newInstance();
 		try {
 			Files.createDirectories( Path.of(getAttribute( LOCAL_REPOSITORY ) ) ) ;
 			

@@ -80,7 +80,7 @@ public class DataFactory {
 		Settings settings = new Settings() ;
 		Engine engine = new Engine( settings ) ;
 		List<Dependency> dependenciesList = engine.scan( project.getLocalRepository() ) ;
-		//List<Dependency> mavenDependencies = mavenProject.getDependencies() ;
+		engine.close();
 		List<Project> dependencies = new ArrayList<>() ;
 		for( Dependency dep : dependenciesList ) {
 			System.out.println( "-> MAVEN dependency: " + dep.toString() ) ;

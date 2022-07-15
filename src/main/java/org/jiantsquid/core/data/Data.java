@@ -1,5 +1,6 @@
 package org.jiantsquid.core.data;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 // 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
@@ -9,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class Data {
+public class Data implements Serializable {
 
 	private final Map<String,String>     attributes = new ConcurrentHashMap<>() ;
 	private final Map<String,List<? extends Data>> data       = new ConcurrentHashMap<>() ;
